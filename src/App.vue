@@ -56,7 +56,8 @@ export default class App extends Vue {
     if (localStorage.length > 0) {
       for (let i = 0; i < localStorage.length; i++) {
         if (localStorage.key(i) !== 'loglevel:webpack-dev-server') {
-          const item = JSON.parse(localStorage.getItem(localStorage.key(i)));
+          const key = localStorage.key(i) || '';
+          const item = JSON.parse(localStorage.getItem(key) || '{}');
           this.todoItems.push(item);
         }
       } 
