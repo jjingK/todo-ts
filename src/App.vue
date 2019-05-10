@@ -1,29 +1,83 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <todo-header></todo-header>
+    <todo-input v-on:addItem="addOneItem"></todo-input>
+    <todo-list v-bind:propsdata="todoItems" v-on:removeItem="removeOneItem" v-on:toggleItem="toggleOneItem"></todo-list>
+    <todo-footer v-on:clearAll="clearAllItems"></todo-footer>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "./components/HelloWorld.vue";
+import { Component, Vue, Emit } from "vue-property-decorator";
+import TodoHeader from "@/components/TodoHeader.vue";
+import TodoInput from "@/components/TodoInput.vue";
+import TodoList from "@/components/TodoList.vue";
+import TodoFooter from "@/components/TodoFooter.vue";
+import { TodoItem } from '@/types';
 
 @Component({
   components: {
-    HelloWorld
+    TodoHeader,
+    TodoInput,
+    TodoList,
+    TodoFooter
   }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  todoItems: TodoItem[] = [];
+
+  @Emit('addItem')
+  addOneItem(item: string): void {
+    const obj = {completed: false, item};
+    localStorage.setItem(item, JSON.stringify(obj));
+    this.todoItems.push(obj);
+  }
+
+  @Emit('removeItem')
+  removeOneItem(todoItem: TodoItem, index: number) {
+    this.todoItems.splice(index, 1);
+    localStorage.removeItem(todoItem.item);
+  }
+
+  @Emit('toggleItem')
+  toggleOneItem(todoItem: TodoItem, index: number) {
+    todoItem.completed = !todoItem.completed;
+    localStorage.removeItem(todoItem.item);
+    localStorage.setItem(todoItem.item, JSON.stringify(todoItem));
+  }
+
+  @Emit('clearAll')
+  clearAllItems(): void {
+    localStorage.clear();
+    this.todoItems = [];
+  }
+
+  created() {
+    if (localStorage.length > 0) {
+      for (let i = 0; i < localStorage.length; i++) {
+        if (localStorage.key(i) !== 'loglevel:webpack-dev-server') {
+          const item = JSON.parse(localStorage.getItem(localStorage.key(i)));
+          this.todoItems.push(item);
+        }
+      } 
+    }
+  }
+}
 </script>
 
 <style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+body {
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  background-color: #F6F6F8;
+}
+input {
+  border-style: groove;
+  width: 200px;
+}
+button {
+  border-style: groove;
+}
+.shadow {
+  box-shadow: 5px 10px 10px rgba(0, 0, 0, 0.03)
 }
 </style>
